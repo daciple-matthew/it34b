@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS activity_logs(
 
     -- client parameters
     activity_log_ip_address VARCHAR(50),
-    actibity_log_user_agent VARCHAR(255),
+    activity_log_user_agent VARCHAR(255),
 
     -- timestamps
     activity_log_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
