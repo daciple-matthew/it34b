@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = 'Invalid login credentials';
 
     if ($login === '' || $password === '') {
-        // Log incomplete log
+        // Log incomplete log 
         logActivity($pdo, null, $login, 'login', 'failed');
     } else {
      
