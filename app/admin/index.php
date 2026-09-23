@@ -2,7 +2,7 @@
 <?php
 
 require '../../config/config.php';
-require '../../config/functions.php';
+
 
 requireRole('admin');
 

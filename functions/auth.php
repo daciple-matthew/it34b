@@ -1,4 +1,5 @@
 <?php
+
 function loginUser($pdo, $login, $password)
 {
     $sql = "
@@ -50,3 +51,8 @@ function requireRole($role)
         die('Access denied.');
     }
 }
+
+
+
+
+?>
