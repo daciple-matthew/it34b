@@ -1,5 +1,6 @@
 <?php
 
+require_once(__DIR__ . '/../functions/session.php');
 function loginUser($pdo, $login, $password)
 {
     $sql = "
