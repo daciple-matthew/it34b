@@ -52,3 +52,26 @@ function endUserSession($pdo)
         'session_id' => $session_id
     ]);
 }
+// check if user is already logged in
+
+function hasActiveUserSession($pdo,$user_id) {
+
+$stmt= $pdo->prepare("
+SELECT session_id
+FROM user_sessions
+WHERE user_id = :user_id
+AND session_end IS NULL
+LIMIT 1
+");
+
+$stmt->execute([
+    'user_id' => $user_id
+]);
+
+return (bool) $stmt->fetchColumn();
+}
+
+
+
+
+?>

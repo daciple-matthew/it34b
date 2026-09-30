@@ -1,31 +1,53 @@
 <?php
 require_once 'config/config.php';
 
-if (isset($_SESSION['user_id'])) {
+if(isset($_SESSION['user_id'])){
     header('Location: ' . BASE_URL . '/app/' . $_SESSION['user_role'] . '/index.php');
     exit;
 }
 
-$error = '';
+$error='';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $login = trim($_POST['login'] ?? '');
-    $password = trim($_POST['password']) ?? '';
-
-
-
+    $password = $_POST['password'] ?? '';
 
     $error = 'Invalid login credentials';
 
-    if ($login === '' || $password === '') {
-        // Log incomplete log
-        logActivity($pdo, null, $login, 'login', 'failed');
+    if ($login==='' || $password ===''){
+        
+        // Log incomplete login attempt
+    logActivity(
+        $pdo,
+        null,
+        $login,
+        'login',
+        'failed'
+    );
+
     } else {
-     
-        if (loginUser($pdo, $login, $password)) {
-            logActivity($pdo, $_SESSION['user_id'], $_SESSION['user_email'], 'login', 'success');
-            header('Location: ' . BASE_URL . '/app/' . $_SESSION['user_role'] . '/index.php');
-            exit;
+
+        $result = loginUser($pdo,$login,$password);
+
+        if($result===true){
+            // Log complete login attempt
+            logActivity(
+                $pdo,$_SESSION['user_id'],
+                $_SESSION['user_email'],
+                'login',
+                'success'
+            );
+
+            echo 'Location: ' . BASE_URL . '/app/' . $_SESSION['user_role'] . '/index.php';
+        header('Location: ' . BASE_URL . '/app/' . $_SESSION['user_role'] . '/index.php');
+        exit;
+       } elseif($result=== 'active_session') {
+        echo 'This account is currently logged in on another device';
+
+        $error = 'This account is currently logged in on another device';
+       } else {
+
+       $error = 'Invalid login credentials';
         }
     }
 }
