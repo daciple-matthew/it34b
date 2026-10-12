@@ -10,4 +10,3 @@ function redirect($path)
 
 
 
-?>

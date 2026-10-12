@@ -79,6 +79,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         <button type="submit">Sign In</button>
 
     </form>
+    <?php if(isset($_GET['timeout'])): ?>
+        <p>Your session has expired due to inactivity. Please login</p>
+        <?php endif; ?>
 </body>
 
 </html>
