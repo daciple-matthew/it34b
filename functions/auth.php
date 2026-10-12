@@ -1,4 +1,6 @@
 <?php
+
+require_once(__DIR__ . '/../functions/session.php');
 function loginUser($pdo, $login, $password)
 {
     $sql = "
@@ -26,12 +28,17 @@ function loginUser($pdo, $login, $password)
     if (!password_verify($password, $user['user_password'])) {
         return false;
     }
-
+// check if user has actve session
+if(hasActiveUserSession($pdo,$user['user_id'])) {
+    return 'active_session';
+}
     $_SESSION['user_id'] = $user['user_id'];
     $_SESSION['user_email'] = $user['user_email'];
     $_SESSION['user_username'] = $user['user_username'];
     $_SESSION['user_role'] = $user['user_role'];
+    
 
+    $_SESSION['session_id'] = startUserSession($pdo);
     return true;
 }
 
@@ -39,14 +46,22 @@ function requireLogin()
 {
     if (!isset($_SESSION['user_id'])) {
         header('Location: ' . BASE_URL . '/index.php');
+        exit;
     }
+
+    checkSessionTimeout();
 }
 function requireRole($role)
 {
     requireLogin();
-
+/*
     if ($_SESSION['user_role'] !== $role) {
         http_response_code(403);
         die('Access denied.');
-    }
+    } */
 }
+
+
+
+
+?>
