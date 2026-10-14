@@ -88,8 +88,8 @@ function checkSessionTimeout() {
                 'logout-session-timeout',
                 'success'
             );
-        }
-        // end database session
+
+            // end database session
         endUserSession($pdo);
 
         // destroy php session
@@ -100,7 +100,10 @@ function checkSessionTimeout() {
         header(
             'Location: ' . BASE_URL . '/index.php?timeout=1'
         );
+        exit;
     }
+        }
+        
 
     // update last activity
     $_SESSION['last_activity'] = time();
