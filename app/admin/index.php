@@ -1,19 +1,48 @@
-
 <?php
 
 require '../../config/config.php';
 
-
 requireRole('admin');
 
-// Get activity logs
-$stmt = $pdo->query("
-    SELECT *
-    FROM activity_logs
-    ORDER BY activity_log_created_at DESC
-");
+// Determine which section to display
+$section = $_GET['section'] ?? 'activity-logs';
 
-$activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Fetch activity logs
+$activities = [];
+
+if ($section !== 'session') {
+    $stmt = $pdo->query("
+        SELECT *
+        FROM activity_logs
+        ORDER BY activity_log_created_at DESC
+    ");
+
+    $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Fetch user sessions
+$sessions = [];
+
+if ($section === 'session') {
+    $stmt = $pdo->query("
+        SELECT 
+        us.session_id,
+        us.user_id,
+        u.user_username,
+        u.user_email,
+        u.user_role,
+        us.session_start,
+        us.session_end,
+        us.session_duration
+
+        FROM user_sessions us
+        INNER JOIN users u
+        ON us.user_id = u.user_id
+        ORDER BY us.session_start DESC
+    ");
+
+    $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 ?>
 
@@ -24,34 +53,45 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Admin Panel</title>
+    <link rel="stylesheet" href="../../app/admin/admin.css?v=2">
 
-    <link rel="stylesheet" href="admin.css">
+    <title>Admin Panel</title>
 </head>
 
 <body>
 
-    <div class="admin-container">
+<div class="admin-container">
 
-        <!-- Header -->
-        <div class="admin-header">
+    <!-- Header -->
+    <div class="admin-header">
 
-            <div>
-                <h1>Welcome Admin</h1>
-                <p>Activity Logs</p>
-            </div>
+        <div>
+            <h1>Welcome Admin</h1>
 
-            <a href="../../auth/signout.php" class="signout-btn">
-                Sign Out
-            </a>
-
+            <?php if ($section === 'session'): ?>
+                <h2>User Sessions</h2>
+            <?php else: ?>
+                <h2>Activity Logs</h2>
+            <?php endif; ?>
         </div>
 
+        <nav>
+            <a href="index.php">Activity Logs</a>
+            <a href="index.php?section=session">User Sessions</a>
+        </nav>
 
-        <!-- Activity Logs Table -->
+        <a href="../../auth/signout.php" class="signout-btn">
+            Sign Out
+        </a>
+
+    </div>
+
+    <!-- Activity Logs -->
+    <?php if ($section !== 'session'): ?>
+
         <div class="table-container">
 
-            <table class="activity-table">
+            <table class="admin-table">
 
                 <thead>
                     <tr>
@@ -60,9 +100,7 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <th>User Email</th>
                         <th>Action</th>
                         <th>Status</th>
-                        <th>IP Address</th>
-                        <th>User Agent</th>
-                        <th>Date & Time</th>
+                        <th>Date &amp; Time</th>
                     </tr>
                 </thead>
 
@@ -71,7 +109,7 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php if (empty($activities)): ?>
 
                         <tr>
-                            <td colspan="8" class="no-data">
+                            <td colspan="6" class="no-data">
                                 No activity logs found.
                             </td>
                         </tr>
@@ -81,43 +119,142 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php foreach ($activities as $activity): ?>
 
                             <tr>
-
                                 <td>
-                                    <?= htmlspecialchars($activity['activity_log_id']) ?>
+                                    <?= htmlspecialchars((string) $activity['activity_log_id']) ?>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($activity['user_id']) ?>
+                                    <?= htmlspecialchars((string) ($activity['user_id'] ?? 'N/A')) ?>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($activity['user_email']) ?>
+                                    <?= htmlspecialchars((string) ($activity['user_email'] ?? 'N/A')) ?>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($activity['activity_log_action']) ?>
+                                    <?= htmlspecialchars((string) $activity['activity_log_action']) ?>
                                 </td>
 
                                 <td>
                                     <?php
-                                    $status = strtolower($activity['activity_log_status']);
+                                    $status = strtolower(
+                                        (string) ($activity['activity_log_status'] ?? '')
+                                    );
                                     ?>
 
                                     <span class="status <?= htmlspecialchars($status) ?>">
-                                        <?= htmlspecialchars($activity['activity_log_status']) ?>
+                                        <?= htmlspecialchars(
+                                            (string) ($activity['activity_log_status'] ?? 'Unknown')
+                                        ) ?>
                                     </span>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($activity['activity_log_ip_address']) ?>
+                                    <?= htmlspecialchars((string) $activity['activity_log_created_at']) ?>
                                 </td>
+                            </tr>
 
-                                <td class="user-agent">
-                                    <?= htmlspecialchars($activity['activity_log_user_agent']) ?>
+                        <?php endforeach; ?>
+
+                    <?php endif; ?>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    <!-- User Sessions -->
+    <?php else: ?>
+
+        <div class="table-container">
+
+            <table class="admin-table">
+
+                <thead>
+                    <tr>
+                        <th>Session ID</th>
+                        <th>User ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Session Start</th>
+                        <th>Session End</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <?php if (empty($sessions)): ?>
+
+                        <tr>
+                            <td colspan="8" class="no-data">
+                                No user sessions found.
+                            </td>
+                        </tr>
+
+                    <?php else: ?>
+
+                        <?php foreach ($sessions as $session): ?>
+
+                            <tr>
+
+                                <td>
+                                    <?= htmlspecialchars((string) $session['session_id']) ?>
                                 </td>
 
                                 <td>
-                                    <?= htmlspecialchars($activity['activity_log_created_at']) ?>
+                                    <?= htmlspecialchars((string) $session['user_id']) ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars((string) ($session['user_username'] ?? 'N/A')) ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars((string) ($session['user_email'] ?? 'N/A')) ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars((string) ($session['user_role'] ?? 'N/A')) ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars((string) $session['session_start']) ?>
+                                </td>
+
+                                <td>
+                                    <?= !empty($session['session_end'])
+                                        ? htmlspecialchars((string) $session['session_end'])
+                                        : 'Active'
+                                    ?>
+                                </td>
+
+                                <td>
+                                    <?php
+                                    if ($session['session_duration'] !== null) {
+
+                                        $duration = max(
+                                            0,
+                                            (int) $session['session_duration']
+                                        );
+
+                                        $hours = intdiv($duration, 3600);
+                                        $minutes = intdiv($duration % 3600, 60);
+                                        $seconds = $duration % 60;
+
+                                        echo sprintf(
+                                            '%02d hr %02d min %02d sec',
+                                            $hours,
+                                            $minutes,
+                                            $seconds
+                                        );
+
+                                    } else {
+                                        echo 'Active';
+                                    }
+                                    ?>
                                 </td>
 
                             </tr>
@@ -132,9 +269,9 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         </div>
 
-    </div>
+    <?php endif; ?>
+
+</div>
 
 </body>
-
 </html>
-
