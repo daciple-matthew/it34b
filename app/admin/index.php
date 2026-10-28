@@ -66,7 +66,12 @@ if ($section === 'session') {
     <div class="admin-header">
 
         <div>
-            <h1>Welcome Admin</h1>
+            <h1>Welcome Admin</h1> 
+
+              <form method="POST" action="../../auth/signout.php">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>" >
+        <button type="submit"> Sign Out </button>
+    </form>
 
             <?php if ($section === 'session'): ?>
                 <h2>User Sessions</h2>
