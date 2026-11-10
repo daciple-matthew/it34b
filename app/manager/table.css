@@ -1,0 +1,40 @@
+/* Simple Table Design */
+
+/* Student Table */
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.student-table th,
+.student-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: left;
+}
+
+/* Book Table */
+.book-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.book-table th,
+.book-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: left;
+}
+
+/* Borrow Table */
+.borrow-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.borrow-table th,
+.borrow-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: left;
+}
